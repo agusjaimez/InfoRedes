@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import './getInfoWidget.dart';
+import './savedLogsWidget.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,25 +51,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Position position;
-  String latitude;
-  String longitude;
-  bool isLocationServiceEnabled;
-  LocationPermission permission;
+  int currentIndex=0;
+  Widget currentWidget=getInfoWidget();
 
-  Future<void> _getLocation() async {
-    isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
-    permission = await Geolocator.checkPermission();
-    if (isLocationServiceEnabled==true){
-      position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      latitude= position.latitude.toString();
-      longitude= position.longitude.toString();
-      setState(() {
-      });
+  void loadWidget(index){
+    if (index==0){
+      currentWidget=getInfoWidget();
     }else{
-      permission = await Geolocator.requestPermission();
+      currentWidget=savedLogsWidget();
     }
+    setState(() {
+      
+    });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -102,40 +101,34 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ElevatedButton(
-              onPressed: _getLocation,
-              child:Text('Get Location'),
-            ),
-            Text(
-              'GPS Coordinates:',
-            ),
-            Text(
-              'Latitude: ',
-            ),
-            Text(
-              '$latitude',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            Text(
-              'Longitude: ',
-            ),
-            Text(
-              '$longitude',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            ElevatedButton(
-              onPressed: _getLocation,
-              child:Text('Get Network Data'),
-            ),
-          ],
+      children: <Widget>[
+        currentWidget
+      ],
+    ),
+
+    ),
+      bottomNavigationBar: BottomNavigationBar(
+      currentIndex: currentIndex,
+      type: BottomNavigationBarType.fixed,
+      items:[
+        BottomNavigationBarItem(
+          icon:Icon(Icons.home_repair_service_rounded),
+          title: Text("Current Info"),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getLocation,
-        tooltip: 'Get Location',
-        child: Icon(Icons.save),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        BottomNavigationBarItem(
+          icon:Icon(Icons.insert_drive_file_rounded),
+          title: Text("Saved Info"),
+        )
+      ],
+      onTap: (index){
+        if(index!=currentIndex){
+          currentIndex=index;
+          loadWidget(index);
+          setState(() {
+          });
+        }
+      },
+    )
     );
   }
 }
